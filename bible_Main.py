@@ -3,12 +3,8 @@
 # @Time    : 2023/9/10 12:00
 # @version    : 1.1
 # @Update log ：第一版
-import cgitb
 import ctypes
 import sys
-from consts import consts
-from PyQt5.QtWidgets import QMainWindow
-from PySide2 import QtCore
 
 import programmer_bible
 from PyQt5.QtWidgets import QApplication, QMainWindow

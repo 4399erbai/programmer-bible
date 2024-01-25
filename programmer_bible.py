@@ -1,21 +1,19 @@
-# -*- coding: utf-8 -*-
-import random
+# -*- coding: utf-8 -*-import random
 
 from PySide2 import QtCore, QtGui, QtWidgets
 from PySide2.QtCore import QSize, Qt
 import sys
-from PySide2.QtGui import QIcon, QIntValidator
-from PySide2.QtWidgets import QApplication, QMainWindow, QPushButton, QSplitter, QWidget, QFormLayout, QLabel, \
-    QLineEdit, \
-    QHBoxLayout, QTabWidget, QFrame, QVBoxLayout, QComboBox, QCheckBox, QSpinBox, QDialog, QGroupBox, QRadioButton, \
-    QButtonGroup, QMenu
-from consts import consts
+from PySide2.QtGui import QIcon
+from PySide2.QtWidgets import QApplication, QMainWindow, QPushButton, QMenu
+
+from base.bible_util import number_generator, tips
+from base import consts_util
 
 
 class Bible(QMainWindow):  # 继承了QMainWindow类的方法和属性
     def __init__(self, parent=None):
         super(Bible, self).__init__(parent)
-        self.setWindowIcon(QIcon(consts.IMAGES["logo"]))  # 加载log图片
+        self.setWindowIcon(QIcon(consts_util.IMAGES["logo"]))  # 加载log图片
         self.setupUi(self)
 
     def setupUi(self, mainWindow):
@@ -88,7 +86,6 @@ class Bible(QMainWindow):  # 继承了QMainWindow类的方法和属性
         self.menubar.addAction(self.menu_2.menuAction())
 
         self.retranslateUi(mainWindow)
-        self.initIcon()
         self.setButton()
         QtCore.QMetaObject.connectSlotsByName(mainWindow)
 
@@ -103,88 +100,59 @@ class Bible(QMainWindow):  # 继承了QMainWindow类的方法和属性
         self.action_2.setText(_translate("mainWindow", "注册"))
         self.action_3.setText(_translate("mainWindow", "注销"))
 
-    def initIcon(self):
-        """"初始化程序的图标"""
-        # logger.info("初始化程序图标")
-        self.playIcon = QIcon(consts.IMAGES["play"])
-        self.stopIcon = QIcon(consts.IMAGES["stop"])
-        self.dirIcon = QIcon(consts.IMAGES["dir"])
-        self.audioIcon = QIcon(consts.IMAGES["audio"])
-        self.connIcon = QIcon(consts.IMAGES["connect"])
-        self.disConnIcon = QIcon(consts.IMAGES["disconnect"])
-        self.reportIcon = QIcon(consts.IMAGES["report"])
-        self.addIcon=QIcon(consts.IMAGES["add"])
+
 
     def setButton(self):
-        print(66666)
         """用于设置添加按钮参数的"""
         _translate = QtCore.QCoreApplication.translate
         # 初始化默认值
         self.books = []  # 存储图书的列表
         self.buttons = []
         self.row_index = 0  # 当前行索引
+        self.books_len = 9
 
         # 初增加按钮
         self.addButton = QtWidgets.QPushButton(self.frame)
         self.addButton.setFixedSize(100, 120)
-        self.addButton.setIcon(QIcon(consts.IMAGES["add"])) #添加图片为add
+        self.addButton.setIcon(QIcon(consts_util.IMAGES["add"])) #添加图片为add
         self.addButton.setIconSize(QSize(40, 40)) #设置图片的尺寸
         # self.addButton.setText('添加')
         self.addButton.setObjectName("addButton")
         self.addButton.clicked.connect(self.create_book)
         self.gridLayout.addWidget(self.addButton, self.row_index, 0)
 
-        def number_generator():
-            num = 0
-            while True:
-                yield num
-                num += 1
-
         # 创建一个生成器对象
         self.generator = number_generator()
 
     def create_book(self, button=None):
         """创建并添加一个新的按钮到网格布局中"""
-        #初始化变量
-        book_title = '书本'+str(next(self.generator)+1)
-        books_len = 9
-        self.col = (len(self.buttons)) % books_len
-        row = (len(self.buttons))//books_len
-        print(f'数量：{len(self.buttons)},行数：{row},col:{self.col}')
-
-        #初始化添加按钮参数
+        # 初始化变量
+        book_title = '书本' + str(next(self.generator) + 1)
+        # 初始化添加按钮参数
         new_button = QPushButton(book_title)
-        new_button.clicked.connect(lambda: print(book_title))
-        new_button.setContextMenuPolicy(Qt.CustomContextMenu)  # 设置按钮的上下文菜单策略为CustomContextMenu,配合以下函数实现右键删除
+        new_button.clicked.connect(lambda: tips(book_title))
+        # 设置按钮的上下文菜单策略为CustomContextMenu,配合以下函数实现右键删除
+        new_button.setContextMenuPolicy(Qt.CustomContextMenu)
         new_button.customContextMenuRequested.connect(lambda pos: self.show_custom_menu(new_button, pos))
-        new_button.setFixedSize(100, 120)#设置按钮的大小
+        # 设置按钮的大小
+        new_button.setFixedSize(100, 120)
 
-
-        def addbuton():
-            print(button)
-            assert False
-            self.gridLayout.addWidget(button, row, self.col)  # gridLayout.addWidget添加同一个部件，只是移动
-            if self.col == books_len - 1:
-                self.gridLayout.addWidget(self.addButton, row + 1, self.col - (books_len - 1))
-            else:
-                self.gridLayout.addWidget(self.addButton, row, self.col + 1)
-
-        if button:
-            for i in self.buttons:
-                self.gridLayout.addWidget(button, row, self.col)  # gridLayout.addWidget添加同一个部件，只是移动
-                if self.col == books_len - 1:
-                    self.gridLayout.addWidget(self.addButton, row + 1, self.col - (books_len - 1))
-                else:
-                    self.gridLayout.addWidget(self.addButton, row, self.col + 1)
+        if not button:
+            x = (len(self.buttons)) % self.books_len
+            y = (len(self.buttons)) // self.books_len
+            self.buttons.append(new_button)
+            self.gridLayout.addWidget(new_button, y, x)
         else:
-            self.buttons.append(new_button)  # 添加按钮
-            print('1111',button)
-            addbuton(button)
-            # self.gridLayout.addWidget(new_button, row, self.col)  # gridLayout.addWidget添加同一个部件，只是移动
-            # if self.col == books_len - 1:
-            #     self.gridLayout.addWidget(self.addButton, row + 1, self.col - (books_len - 1))
-            # else:
-            #     self.gridLayout.addWidget(self.addButton, row, self.col + 1)
+            x = self.buttons.index(button) % self.books_len
+            y = self.buttons.index(button) // self.books_len
+            self.gridLayout.addWidget(button, y, x)
+
+        tips(f'数量：{len(self.buttons)},x：{y},y:{x}')
+        # 当新增书本到9个，加号就添加到第二行了
+        if x == self.books_len - 1:
+            self.gridLayout.addWidget(self.addButton, y + 1, x - (self.books_len - 1))
+        else:
+            self.gridLayout.addWidget(self.addButton, y, x + 1)
 
 
     # 设置右键删除函数
@@ -193,21 +161,19 @@ class Bible(QMainWindow):  # 继承了QMainWindow类的方法和属性
         delete_action = menu.addAction("删除")
         action = menu.exec_(button.mapToGlobal(pos))
         if action == delete_action:
-            book_title = button.text()
+            # book_title = button.text()
             self.buttons.remove(button)
             button.setParent(None)  # 从父控件中移除
             button.deleteLater()   # 销毁按钮
-            self.reset_view(button) # 重塑界面
+            self.reset_view() # 重塑界面
 
-    def reset_view(self,button):
+    def reset_view(self):
         """
-        当点击右键删除时，移除这个按钮，并计算它的定位。
-        如果，在它前面的按钮，不用动。如果在它后面的按钮，通用往前挪动一格。
-        如果，在它在后面的按钮，排数大于1，并且位置在0，的话就上一行。
+        当点击右键删除时，删除全部按钮，并重新添加
         """
-        self.create_book(button)
-
-
+        for but in self.buttons:
+            but.setParent(None)
+            self.create_book(but)
 
 
 if __name__ == '__main__':
